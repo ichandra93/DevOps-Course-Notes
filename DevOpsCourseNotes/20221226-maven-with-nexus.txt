@@ -1,0 +1,107 @@
+goals in maven:
+---------------
+validate
+compile
+test
+package
+verify
+install
+deploy
+
+Maven Deploy:
+-------------
+How To Install Latest Sonatype Nexus 3 on Linux
+------------------------------------------------
+Pre-Requisites:
+---------------
+1. Minimum 1 VCPU & 2 GB Memory		--> t2.small
+2. OpenJDK 8
+3. Server firewall opened for port 22 & 8081
+4. All Nexus processes should run as a non-root nexus user
+
+yum install java-1.8.0-openjdk -y		--> install java
+
+Ports:
+------
+SSH		--> 22			--> This port is used to connect linux servers
+Nexus	--> 8081		--> Its for connecting nexus application
+
+Download Nexus:
+---------------
+cd /opt
+wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+tar xvf nexus.tar.gz
+
+useradd nexus
+
+chown -R nexus:nexus nexus-3.44.0-01
+chown -R nexus:nexus sonatype-work
+
+cd nexus-3.44.0-01/bin
+
+vi nexus.rc
+-------------------------
+run_as_user="nexus"
+-------------------------
+
+sh nexus start
+
+netstat -lntp | grep 8081		--> To check application is running or not
+
+
+<ip>:<port>
+http://44.198.177.163:8081/
+
+admin
+Admin#123
+
+
+Build Server:
+-------------
+yum install git java-1.8.0-openjdk maven -y
+git --version
+java -version
+mvn -version
+
+Maven Deploy to Nexus:
+----------------------
+pom.xml
+--------
+<distributionManagement>
+   <snapshotRepository>
+      <id>maven-snapshots</id>
+      <url>http://44.198.177.163:8081/repository/maven-snapshots/</url>
+   </snapshotRepository>
+   <repository>
+      <id>maven-releases</id>
+      <url>http://44.198.177.163:8081/repository/maven-releases/</url>
+   </repository>   
+</distributionManagement>
+
+    <server>
+      <id>maven-snapshots</id>
+      <username>admin</username>
+      <password>Admin#123</password>
+    </server>
+
+    <server>
+      <id>maven-releases</id>
+      <username>admin</username>
+      <password>Admin#123</password>
+    </server>
+
+
+mvn clean deploy		--> Thi command looks for distributionManagement in pom.xml
+
+
+SNAPSHOT and RELEASE:
+---------------------
+development (SNAPSHOT)		--> Build will be change again and again (jar/war)
+production  (RELEASE)		--> Build will be final
+
+
+http://44.198.177.163:8081/repository/maven-releases/org%2Fspringframework%2Fgs-spring-boot%2F0.1.0%2Fgs-spring-boot-0.1.0.jar
+
+curl -u <username>:<password> -X GET '<url-of-file>' --output <final-name-of-jar>
+
+curl -u admin:Admin#123 -X GET 'http://44.198.177.163:8081/repository/maven-releases/org%2Fspringframework%2Fgs-spring-boot%2F0.1.0%2Fgs-spring-boot-0.1.0.jar' --output springboot-hello.jar
