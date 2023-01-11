@@ -1,0 +1,84 @@
+Package Management:
+-------------------
+repo
+rpm
+tar
+zip
+
+
+repo
+-----
+default path where we need to keep repo files	--> /etc/yum.repos.d/
+keep file as <package-name>.repo
+yum install <package-name>
+
+/etc/yum.repos.d/grafana.repo
+-----------------------------
+[grafana]
+name=grafana
+baseurl=https://rpm.grafana.com
+repo_gpgcheck=1
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.grafana.com/gpg.key
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+---------------------------------
+
+yum install grafana 
+systemctl start grafana-server  (or) service grafana-server start
+
+rpm
+----
+https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.5.3-x86_64.rpm
+rpm -ivh <rpm-file>
+
+tar:
+-----
+https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+
+zip:
+----
+https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.70/bin/apache-tomcat-9.0.70.zip
+
+
+Applications will run on some specific port number
+grafana application		--> 3000
+
+netstat -lntp		--> to check running port numbers of application
+
+username	--> admin
+password	--> admin	
+					--> Admin#123
+
+Security group is used to allow people to access our application			
+
+Install GIT:
+-------------
+yum install git -y
+git --version
+
+Install Java:
+--------------
+yum install java-1.8.0-openjdk -y
+java -version
+
+
+tar:
+----
+Apache Maven installation:
+--------------------------
+1. Download tar file
+2. Extract tar file
+3. export PATH
+
+
+curl / wget
+
+cd /opt
+wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+tar -xvf apache-maven-3.8.6-bin.tar.gz
+export PATH=$PATH:/opt/apache-maven-3.8.6/bin/
+mvn -version
+
+

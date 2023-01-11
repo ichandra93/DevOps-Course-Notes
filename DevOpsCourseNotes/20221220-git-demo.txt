@@ -1,0 +1,51 @@
+GIT:
+----
+1. Plan
+2. Code		--> Where we are going to keep our code 
+			--> Github / Bitbucket / CodeCommit / Azure Repos / SVN / Gitlab
+3. Build
+4. Test
+5. Release
+6. Deploy
+7. Operate
+8. Monitor
+
+Github:		--> Everyone should have our own accouts
+-------
+https://github.com/
+
+https://github.com/Naresh240		--> This is my account
+https://github.com/<username>
+
+
+Git we can call as version control system:
+------------------------------------------
+Git is a version control system that developers use all over the world. It helps you track different versions of your code and collaborate with other developers. If you are working on a project over time, you may want to keep track of which changes were made, by whom, and when those changes were made.
+
+VCS:
+----
+Centralised Version Control System(CVCS)	--> SVN
+	--> We can move only one commit to Remote
+	--> We should connect internet always
+Distributed Version Control System(DVCS)	--> Github / Bitbucket 
+	--> We can move multiple commits to Remote/Centralised
+	--> Its not required to connect internet always, while pushing we need to connect
+
+Create Repository:
+------------------
+Remote place we need to create
+
+--> Install git in our laptop
+
+git clone <url>			--> Used to get remote repo to local
+
+If you want to convert local folder as git repository, we can use
+	--> git init
+	
+If you want to push changes to remote:
+---------------------------------------
+git add
+git commit -m <message>
+git push	
+
+git status

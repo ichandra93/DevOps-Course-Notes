@@ -1,0 +1,100 @@
+How to deploy application in container
+--------------------------------------
+Springboot application
+----------------------
+- Operating System			--> server/container
+- Install softwares			--> java
+- Deploy					--> java -jar <jarfile>
+
+
+Dangling image:
+---------------
+A dangling image just means that you've created the new build of the image, but it wasn't given a new name. So the old images you have becomes the "dangling image". Those old image are the ones that are untagged and displays "" on its name when you run docker images.
+
+docker system prune
+
+WARNING! This will remove:
+  - all stopped containers
+  - all networks not used by at least one container
+  - all dangling images
+  - all dangling build cache
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN yum install java-1.8.0-openjdk -y
+WORKDIR /opt
+ARG version
+ENV jarfile=gs-spring-boot-${version}.jar
+COPY ./target/${jarfile} ${jarfile}
+ENTRYPOINT java -jar ${jarfile}
+
+
+FROM openjdk:11
+MAINTAINER naresh@gmail.com
+WORKDIR /opt
+ARG version
+ENV jarfile=gs-spring-boot-${version}.jar
+COPY ./target/${jarfile} ${jarfile}
+ENTRYPOINT java -jar ${jarfile}
+
+docker build -t springboothello:v1 . --build-arg version=0.1.0
+
+Multi stage build:  we need to multiple FROM commands
+------------------
+To reduce size of images we can use multi stage build
+
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN yum install java-1.8.0-openjdk maven -y
+WORKDIR /opt
+COPY . .
+RUN mvn clean package
+ENTRYPOINT ["java", "-jar", "target/gs-spring-boot-0.1.0.jar"]
+
+docker build -t springboothello:v1 .
+
+
+FROM maven as build
+WORKDIR /opt
+COPY . .
+RUN mvn install
+
+FROM openjdk:11
+WORKDIR /opt
+COPY --from=build /opt/target/gs-spring-boot-0.1.0.jar app.jar
+ENTRYPOINT ["java","-jar","app.jar"]
+
+
+Nodejs application:
+-------------------
+nodejs build --> npm
+
+1. Install nodejs
+	sudo yum install -y gcc-c++ make
+	curl -sL https://rpm.nodesource.com/setup_13.x | sudo -E bash -
+	sudo yum install -y nodejs
+2. Build package		--> package.json
+	npm install
+3. Run package
+	node "server.js"
+
+
+Dockerfile:
+-----------
+FROM node:10
+WORKDIR /opt
+COPY . .
+RUN npm install
+ENTRYPOINT ["node","server.js"]
+
+docker build -t nodejshello:v1 .
+docker run --name nodejshello-container -p 8080:8080 -d nodejshello:v1
+
+Is it possible to create Dockerfile with different name?
+yes we can create.
+
+If you want to keep our own Dockerfile name, we need to use -f option inside docker build command
+
+nodejs-dockerfile		--> dockerfile under opt directory
+docker build -t nodejshello:v1 -f /opt/nodejs-dockerfile .

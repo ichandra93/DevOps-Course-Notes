@@ -1,0 +1,21 @@
+pull request in github:
+-----------------------
+I can write rule to block pushing to this master branch until review need to complete
+
+Pull request  --> New pull request
+
+github with command:
+	- username
+	- password
+	
+git push
+	--> username
+	--> password  (personal access token)
+	
+Settings --> Developer settings  --> PAT --> Tokens
+
+tags and release:
+-----------------
+git tag -a test-1.0.0 -m "first release"
+git tag
+git push -u origin test-1.0.0

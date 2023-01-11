@@ -1,0 +1,41 @@
+clone:
+------
+To get repository from remote to local
+
+git clone <url>
+
+git clone https://github.com/Naresh240/example1.git
+
+3 types of stages in git:
+-------------------------
+untracked/working area			--> Here we are doing some changes
+	git add 
+tracked/staging area
+	git commit -m <message>
+local repository
+
+git log
+git log --oneline
+
+
+changes means  --> create/update/delete
+
+If you want to convert folder as local repository, we can use 
+	--> git init
+	--> create file
+	--> add remote url in our local repo
+
+If you want to move local folder to remote repository
+	--> git init
+	--> add file
+	--> git remote add origin <url>
+	--> git add 
+	--> git commit -m <message>
+	--> git push --set-upstream origin master  / git push -u origin master
+	
+Branch:
+--------
+git branch <branch-name>	--> To create a branch
+git branch					--> It will show all branches
+git checkout <branch-name>	--> To which branch you want to move
+git push -u origin <branch-name>	--> To move new branch to remote

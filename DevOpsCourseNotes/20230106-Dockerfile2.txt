@@ -1,0 +1,114 @@
+Dockerfile:
+-----------
+FROM		--> To pull base images
+MAINTAINER	--> We are giving info about who written
+RUN			--> To install softwares or it might be any kind of commands
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y
+RUN mkdir /app
+ENTRYPOINT/CMD
+	An ENTRYPOINT allows you to configure a container that will run as an executable
+	
+ENTRYPOINT ["sleep","120"]
+
+sleep 120
+
+java -jar <jar-file-name>
+ENTRYPOINT ["java","-jar","<jar-file-name>"]
+
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y && \
+	mkdir /app && \
+	touch /app/test.txt
+CMD ["sleep","120"]
+
+What is difference between ENTRYPOINT and CMD?
+-	CMD can be overridable but ENTRYPOINT can not be overridable
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y && \
+    mkdir /app && \
+    touch /app/test.txt
+ENTRYPOINT ["echo","Hello"]
+CMD ["world"]
+
+-------------------------------------------------------
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y && \
+    mkdir /app && \
+    touch /app/test.txt
+ENTRYPOINT ["echo","Hello"]
+CMD ["world"]
+CMD ["world123"]
+CMD ["Devops"]
+
+
+ADD and COPY
+------------
+To copy file to container
+	--> docker cp 
+	
+COPY is used to copy files from local to container, but URL won't work here
+ADD is used to copy files from local to container, also it will copy files from url's to container
+
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y && \
+    mkdir /app && \
+    touch /app/test.txt
+COPY ./devops.txt /app
+ADD https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz /app
+ENTRYPOINT ["sleep","120"]
+
+WORKDIR:
+--------
+	To set present working directory
+	
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+RUN amazon-linux-extras install java-openjdk11 -y && \
+    mkdir /app
+WORKDIR /app
+RUN touch test.txt
+COPY ./devops.txt .
+ADD https://dlcdn.apache.org/maven/maven-3/3.8.7/binaries/apache-maven-3.8.7-bin.tar.gz .
+ENTRYPOINT ["sleep","120"]
+
+EXPOSE		--> To set port number
+
+EXPOSE 5000
+
+docker run --name springboot -p 5000:5000 -d image:tag
+
+USER		--> Is setting who will run commands of Dockerfile in our container
+
+USER ec2-user
+
+ENV and ARG
+-----------
+The ARG instruction defines a variable that users can pass at build-time to the builder with the docker build command using the --build-arg <varname>=<value> flag.
+
+The ENV instruction sets the environment variable <key> to the value <value>.
+The environment variables set using ENV will persist when a container is run from the resulting image.
+
+building an image with a specific ARG
+using that ARG as an ENV
+
+That is, with a Dockerfile including:
+	ARG var
+	ENV var=${var}
+	
+FROM amazonlinux:latest
+MAINTAINER naresh@gmail.com
+ARG value_a
+ENV value_b=$value_a
+RUN echo "$value_a"
+RUN echo "$value_b"
+
+docker build -t argument:v4 . --build-arg value_a=10

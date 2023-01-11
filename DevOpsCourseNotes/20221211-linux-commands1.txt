@@ -1,0 +1,30 @@
+Linux:
+------
+sudo -i		--> switch to root user
+ls/ll		--> to check list of directories and files
+ls -la		--> long listing with all files and directories
+mkdir 		--> make directory
+touch		--> we can create empty file
+pwd			--> present working directory
+cd			--> change directory
+cd ..		--> coming back to older directory
+vi/vim/nano	--> Editors in linux
+If you want to write something in file, we need to click on "i" button
+i --> insert mode
+
+esc + :wq!	--> If you want to save file
+esc + :q!	--> If you want to close file without saving
+
+cat			--> To display content of the file
+
+default user and pemfile	--> connected to instance
+I want to connect with user and password
+useradd
+	--> if you want to find out user is created or not
+	--> /etc/passwd
+passwd
+
+Admin#123
+
+/etc/ssh/sshd_config		--> Enable password Authentication
+service sshd restart

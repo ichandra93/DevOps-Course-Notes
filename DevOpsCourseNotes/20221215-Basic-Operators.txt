@@ -1,0 +1,52 @@
+Basic Operators in Linux:
+-------------------------
+Arithmetic Operators
+Relational Operators
+Boolean Operators
+String Operators
+File Test Operators
+
+shell scripts:
+--------------
+#!/bin/bash
+wget <url>
+tar -xvf <tarfile>
+export <path>
+
+I need to install maven
+wget <url>
+tar -xvf <tarfile>
+export <path>
+
+sh maven.sh
+
+#!/bin/bash		-->  she bang
+
+What interpreter is used in Linux?
+The shell is the Linux command line interpreter. It provides an interface between the user and the kernel and executes programs called commands.
+
+bash
+ask
+ksh
+azh
+
+VS Code --> install
+
+IDE tool  --> we can do development / we can write scripts
+
+
+#!/bin/bash
+read -p "provide value for a: " a
+read -p "provide value for b: " b
+read -p "provide string value: " string_value
+addition=`expr $a + $b`
+echo "Total value : $addition"
+echo "value of string is $string_value"
+
+
+#!/bin/bash
+read -p "value a: " a
+read -p "value b: " b
+
+sub=`expr $a - $b`
+echo "subtraction value is $sub"

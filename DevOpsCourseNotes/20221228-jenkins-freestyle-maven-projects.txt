@@ -1,0 +1,51 @@
+Jenkins:
+--------
+pre-requisite:
+--------------
+	- java
+		amazon-linux-extras install java-openjdk11 -y
+		java -version
+
+setup:
+------
+wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+yum install jenkins -y
+service jenkins start
+
+Default port number for jenkins		- 8080
+
+This port we need to open in security group
+
+<IP>:<port>
+
+Jenkins jobs:
+-------------
+FreeStyle project
+Maven project
+Pipeliens
+	- Declarative
+	- Scripted
+	
+If you want to get maven project need to add plugin --> maven integration
+	Manage jenkins	--> 	Manage plugins 	--> 	Available plugins 
+	
+Tool Integration:
+------------------
+Manage Jenkins	--> Global Tool Configuration
+
+If you want to deploy in tomcat need to add plugin	--> Deploy to containerVersion
+
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<role rolename="manager-jmx"/>
+<role rolename="manager-status"/>
+<user username="tomcat" password="s3cret" roles="manager-gui,manager-script,manager-jmx,manager-status"/>
+
+
+Infra  --> configuration --> deploy
+(ec2)		(tomcat)
+
+Terraform	ansible			ci/cd

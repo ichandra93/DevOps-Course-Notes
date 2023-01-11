@@ -1,0 +1,124 @@
+How to deploy python application:
+---------------------------------
+python requires pip to download all the modules
+
+pip install flask
+pip install mysql-connector
+pip install os
+
+requirement.txt
+-----------------
+flask
+mysql-connector
+os
+
+yum install python-pip -y
+
+pip install -r requirement.txt
+
+python home.py
+
+
+
+FROM ubuntu:18.04
+RUN apt-get update -y && \
+	apt-get install -y python-pip python-dev build-essential
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+ENTRYPOINT ["python","home.py"]
+
+Golang:	
+-------
+build tool  --> GO
+
+go build helloworld.go			--> build
+./helloworld					--> deploy
+
+
+FROM golang:latest
+WORKDIR /app
+COPY . .
+RUN go build helloworld.go
+CMD ["/app/helloworld"]
+
+
+docker-compose:
+---------------
+I want to run multiple containers at a time
+
+springboot + database
+python	+ database
+
+docker run 	--> database		(link)
+docker run  --> application
+
+we need to write yaml file		--> inside we need to keep services
+
+Install docker-compose:
+-----------------------
+curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
+chmod +x docker-compose
+mv docker-compose /usr/bin/
+docker-compose version
+
+---
+version: "3"
+
+services:
+  service1:
+    image:
+    port:
+  service2:
+    image:
+  service3:
+    image:
+	
+---
+version: "3"
+
+services:
+  nginx-service:
+    container_name: nginx-container
+    image: nginx:latest
+    ports:
+      - 80:80
+
+docker run --name nginx-container -p 80:80 -d nginx:latest
+
+docker-compose up -d
+docker-compose down
+
+docker volume:
+--------------
+mysql   --> we are creating tables
+
+mysql container crashed, in that case data will be lost
+
+docker run --name mysql-container -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Admin#123 -e MYSQL_DATABASE=mysqldb -e MYSQL_USER=naresh -e MYSQL_PASSWORD=Naresh#240 -d mysql:5.7
+
+database --> user, password, database
+
+user			--> root	
+root_password	--> 
+
+
+mysql -u root -p
+
+show databases;
+
+use mysqldb;
+
+CREATE TABLE employee (
+    empno int,
+    empname varchar(40)
+);
+
+INSERT INTO employee (empno, empname)
+VALUES (101, "Naresh");
+
+select empno,empname from employee;
+
+select * from employee;
+
+docker run --name mysql-container -v mysqlvolume:/var/lib/mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Admin#123 -e MYSQL_DATABASE=mysqldb -e MYSQL_USER=naresh -e MYSQL_PASSWORD=Naresh#240 -d mysql:5.7

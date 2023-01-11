@@ -1,0 +1,80 @@
+Commands in Linux:
+------------------
+cp		--> To copy files from source to destination
+mv		--> To move files from source to destination / To renaming files
+rm		--> To delete files or directories
+
+rm -d <dir-name>	--> to delete empty directory
+rm -r <dir-name>	--> to delete non empty directory
+rm -df <dir-name>	--> to delete empty directory forcefully
+rm -rf <dir-name>	--> to delete non empty directory forcefully
+
+file permission:
+----------------
+
+d	rwx		r-x		r-x 	root root	example
+-	rw-		r--		r-- 	root root 	test.txt
+
+first place is going to decide whether file or directory
+d	--> directory
+-	--> file
+
+r	--> read
+w	--> write
+x	--> execute
+
+
+d	rwx		r-x		r-x 		root 	root	example	
+	
+	user	group	others		owner	group
+	
+create a group
+	--> adding users to this group
+	
+100	--> 1 owner, 20 group, 79 others
+
+
+chmod		--> change mode
+
+d	rw-		rw-		r--		root 	root	example	
+
+chmod u=rw-,g=rw-,o=r-- example
+chmod u=rw-,g=r--,o=--- example
+
+
+0 to 7
+
+	r	w	x
+	4	2	1
+	
+0	0	0	0	--> ---
+1	0	0	1	--> --x
+2	0	1	0	--> -w-
+3	0	1	1	--> -wx
+4	1	0	0	--> r--
+5	1	0	1	--> r-x
+6	1	1	0	--> rw-
+7	1	1	1	--> rwx
+
+chmod 664 example
+chmod 440 example
+chmod 541 example
+
+useradd  	--> To create user
+
+groupadd <group-name>
+
+Whenever we are creating user, group will create automatically
+where we can check group info
+	--> /etc/group
+	
+add user to group
+-------------------
+usermod -a -G groupname username
+	
+usermod -aG devops yash
+	
+chown	--> change ownership
+
+chown <owner>:<group> <dir/file>
+chown -R <owner>:<group> <directory>

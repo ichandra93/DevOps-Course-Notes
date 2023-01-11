@@ -1,0 +1,137 @@
+Basic Operators:
+----------------
+We will now discuss the following operators −
+
+Arithmetic Operators
+Relational Operators
+Boolean Operators
+String Operators
+File Test Operators
+
+Unix Shell supports following forms of if…else statement −
+
+if...fi statement
+if...else...fi statement
+if...elif...else...fi statement
+
+if [ condition ]
+then
+	statements;		# if condition is true then only statements will be execute
+fi
+
+-----------------------------------------
+#!/bin/bash
+read -p "value for a is " a
+read -p "value for b is " b
+if [ $a -eq $b ]
+then
+	echo "a and b are equal"
+else
+    echo "a and b are not equal"
+fi
+
+
+
+#!/bin/bash
+read -p "value for a is " a
+read -p "value for b is " b
+if [ $a -gt $b ]
+then
+	subtraction=`expr $a - $b`
+    echo "subtraction value is $subtraction"
+elif [ $a -lt $b ]
+then
+    addition=`expr $a + $b`
+    echo "addition value is $addition"
+else
+    echo "a and b are equal"
+fi
+
+OR Operator:
+------------
+con1	cond2	output
+----------------------------
+true	true	true
+true 	false	true
+false	true	true
+false	false	flase
+
+#!/bin/bash
+read -p "value for a: " a
+read -p "value for b: " b
+
+if [ $a -lt 20 -o $b -gt 100 ]
+then
+    echo "a might be lessthan 20 and b might be greterthan 100"
+else
+    echo "a is not lessthan 20 and b is not greaterthan 100"
+fi
+
+AND Operator:
+------------
+con1	cond2	output
+----------------------------
+true	true	true
+true 	false	flase
+false	true	flase
+false	false	flase
+
+#!/bin/bash
+read -p "value for a: " a
+read -p "value for b: " b
+
+if [ $a -lt 20 -a $b -gt 100 ]
+then
+    echo "a is lessthan 20 and b is greterthan 100"
+else
+    echo "a might be greaterthan 20 and b might be lessthan 100"
+fi
+
+String Operators
+----------------
+#!/bin/bash
+read -p "provide value for string: " a
+
+if [ -z $a ]
+then
+    echo "value not provided, string size is zero"
+else
+    echo "value of a is $a"
+fi
+
+
+#!/bin/bash
+read -p "provide value for string: " a
+
+if [ $a ]
+then
+    echo "value of a is $a"
+else
+    echo "value not provided, string size is zero"
+fi
+
+
+File Test Operators:
+--------------------
+#!/bin/bash
+file_name="test.txt"
+
+if [ -f $file_name ]
+then
+    echo "$file_name is exists"
+    echo "file is exists and entering some content" > test.txt
+else
+    echo "$file_name is not exists"
+    echo "file is not exists and entering some content" > test.txt
+fi
+
+
+#!/bin/bash
+dir_name="test"
+
+if [ -d $dir_name ]
+then
+    echo "$dir_name directory is exists"
+else
+    echo "$dir_name directory is not exists"
+fi

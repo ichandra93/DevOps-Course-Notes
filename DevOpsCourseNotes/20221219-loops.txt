@@ -1,0 +1,146 @@
+Loops in linux:
+---------------
+A loop is a powerful programming tool that enables you to execute a set of commands repeatedly
+
+1. while loop
+2. for loop
+3. until loop
+
+while loop:
+------------
+while command
+do
+   Statement(s) to be executed if command is true
+done
+
+#!/bin/bash
+a=1
+while [ $a -lt 10 ]
+do
+    echo "value for a: $a"
+    a=`expr $a + 1`
+done
+
+until condition is going to fail loop will be execute
+
+until loop:
+-----------
+until command
+do
+   Statement(s) to be executed until command is true
+done
+
+
+#!/bin/bash
+a=1
+until [ $a -gt 10 ]
+do
+    echo "value for a: $a"
+    a=`expr $a + 1`
+done
+
+until condition is true statements will be execute
+
+for loop:
+---------
+The for loop operates on lists of items. It repeats a set of commands for every item in a list.
+
+for var in word1 word2 ... wordN
+do
+   Statement(s) to be executed for every word.
+done
+
+for i in 1 2 3 4 5 6 7 8 9 10
+do
+	echo "value is: $i"
+done
+
+#!/bin/bash
+for num in {1..10}
+do
+	echo "value is: $num"
+done
+
+
+for (( EXP1; EXP2; EXP3 ))
+do
+    command1
+    command2
+    command3
+done
+
+#!/bin/bash
+for (( i=1; i<=10; i++ ))
+do 
+	echo "value is: $i"
+done
+
+----------------------------------------
+
+#!/bin/bash
+file_name="test.txt"
+for i in `ls *.txt`
+do
+    if [ $i == $file_name ]
+    then
+        rm -rf $i
+        echo "$i file is deleted"
+    fi
+done 
+
+case:
+------
+case word in
+   pattern1)
+      Statement(s) to be executed if pattern1 matches
+      ;;
+   pattern2)
+      Statement(s) to be executed if pattern2 matches
+      ;;
+   pattern3)
+      Statement(s) to be executed if pattern3 matches
+      ;;
+   *)
+     Default condition to be executed
+     ;;
+esac
+
+
+#!/bin/bash
+FRUIT=$1
+
+case "$FRUIT" in
+   "apple") echo "Apple pie is quite tasty." 
+   ;;
+   "banana") echo "I like banana nut bread." 
+   ;;
+   "kiwi") echo "New Zealand is famous for kiwi." 
+   ;;
+   *) echo "Fruit name not exist, please provide only apple/banana/kiwi"
+   ;;
+esac
+
+different types of extractions 	--> zip, tar, 7z
+
+#!/bin/bash
+fullfile=apache-maven-3.8.6-bin.tar.gz
+if [ -f $fullfile ]
+then
+    echo "$fullfile is exist"
+    file_name="$(basename -- "$fullfile")"
+    extraction_format="${file_name##*.}"
+    echo $extraction_format
+
+    case "$extraction_format" in
+       "zip") unzip $file_name
+    		  echo "$file_name is extracted with unzip"
+       ;;
+       "gz") tar -xvf $file_name
+    		  echo "$file_name is extracted with tar"
+       ;;
+       *) echo "extension is not exist"
+       ;;
+    esac
+else
+    echo "$fullfile is not exist"
+fi

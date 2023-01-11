@@ -1,0 +1,39 @@
+Merge and Rebase:
+-----------------
+If you want to move changes from one branch to other branch, we can use either merge or rebase
+
+Merge will create extra commit  		--> it will give info about who did this merge
+Rebase will not create any extra commit
+
+git checkout dev
+git merge --no-ff feature/dev1
+git log --oneline
+
+git checkout master
+git rebase feature/dev1
+git log --oneline
+
+If you want to get changes from remote repo to local,
+	--> git pull
+
+Fetch and pull:
+---------------
+pull  = fetch + merge
+
+conflicts:
+----------
+If two developers are working on same file in two different branches, whenever they want to move changes to same branch, it will give conflicts
+we can resolve conflicts manually or else we can use some 3rd party tools
+	--> Tortoise git
+
+Revert and Reset:
+-----------------
+You can also think of git revert as a tool for undoing committed changes, while git reset HEAD is for undoing uncommitted changes. 
+
+git revert <commit-id>			--> it will give some extra commit as well
+git reset --hard <commit-id>	
+		--> we need to move HEAD position, so upto that commitid all chages are going to removes, also it will remove history
+		
+git reset --hard	--> permanently delete
+git reset --mixed	--> working area
+git reset --soft	--> staging area

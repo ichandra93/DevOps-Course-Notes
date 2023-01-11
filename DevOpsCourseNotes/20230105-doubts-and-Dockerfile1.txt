@@ -1,0 +1,79 @@
+we can deploy applications
+	--> EC2
+	--> web servers
+		--> tomcat
+		--> Jboss
+	--> Docker
+	--> Kubernetes
+
+developers  --> github
+	--> updated code  --> 1.0.0
+	--> 1.1.0
+	--> 1.2.0
+	--> 50 times
+	
+1. clone code
+2. test code
+3. build artifact
+4. push artifact
+5. deploy application
+
+--> we can automate our deployment process with CI/CD pipelines
+
+jenkins --> webhook		--> will trigger pipeline based on commit
+
+springboot framework  --> java
+	maven
+	gradle
+nodejs
+	--> npm
+	--> clone
+		--> build
+		--> deploy
+python
+	--> python
+reactjs 
+angular
+	-->npm
+golang
+	--> go
+spark		--> jar
+
+
+java language 
+go language
+pyhton language
+
+
+Dockerfile:		--> docker images	--> docker container
+-----------
+some commands in Dockerfile
+
+FROM			--> pulling images
+MAINTAINER
+RUN
+WORKDIR
+ADD
+COPY
+ENV
+ARG
+USER
+EXPOSE
+ENTRYPOINT
+CMD
+
+Install docker:
+---------------
+	yum install docker -y
+	service docker start
+	
+docker pull
+
+docker build -t <image-name>:<tag> <dockerfile-path>
+
+docker run --name <container-name> -p <outbound-port>:<inbound-port> -d <image>:<tag>
+
+deploy and then publish
+
+code  --> 1.0.0  --> test:v1
+	  --> 1.1.0  --> test:v2

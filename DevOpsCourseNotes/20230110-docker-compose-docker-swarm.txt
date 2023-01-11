@@ -1,0 +1,120 @@
+docker compose:
+---------------
+python with database:
+---------------------
+dabase(mysql)--> container
+python app	 --> container
+
+volume		--> Even container is going to down we should miss any data
+
+https://ip:port/POST		--> url
+https://ip:port/GET		--> url
+
+
+docker volume create emp-volume
+docker run --name mysqldb \
+-v emp-volume:/var/lib/mysql \
+-p 3306:3306 \
+-e MYSQL_ROOT_PASSWORD=Admin#123 \
+-e MYSQL_DATABASE=mysqldb \
+-e MYSQL_USER=naresh \
+-e MYSQL_PASSWORD=Naresh#240 -d mysql:5.7
+
+docker run --name python-mysql \
+--link mysqldb \
+-p 5000:5000 \
+-d python-app:v1
+
+curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
+chmod +x docker-compose
+mv docker-compose /usr/bin
+
+version: "3"
+
+services:
+  mysqldb:
+    image: mysql:5.7
+    container_name: mysqldb
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=Admin#123
+      - MYSQL_DATABASE=mysqldb
+      - MYSQL_USER=naresh
+      - MYSQL_PASSWORD=Naresh#240
+    networks:
+      - mysql_network
+  python-application:
+    restart: always
+    image: naresh240/python-with-database:latest
+    container_name: python-application
+    ports:
+      - 5000:5000
+    depends_on:
+      - mysqldb
+    networks:
+      - mysql_network
+
+volumes:
+    db_data: {}
+
+networks:
+  mysql_network:          
+
+
+if you want to run multiple containers for same application we can use docker swarm cluster
+
+docker swarm cluster:
+---------------------
+setup:
+------
+master
+worker
+
+hostnamectl set-hostname master
+hostnamectl set-hostname worker
+
+
+1. Install docker on both master and worker
+2. Initialise docker swarm master				--> master machine
+	docker swarm init
+		This command will provide token for connecting workers to master
+	docker node ls			--> This will provide info about master is ready or not
+
+docker swarm join --token SWMTKN-1-40u6bwazd9165cp594cdasf2j8d66e5lves5rxkhlvwk5x91pn-7fuch87k0myw3orkxgqa8i1bn 172.31.84.201:2377
+
+3. Before running token under workers, need to open 2377 under master machine security group
+
+
+
+---
+version: '3.8'
+services:
+  nginx-deploy:
+    image: nginx:latest
+    deploy:
+      replicas: 5
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: "512M"
+    ports:
+    - "80:80"
+    networks:
+    - nginx-network
+networks:
+  nginx-network:
+    driver: overlay
+	
+docker have 3 networks:
+-----------------------
+1. Host			--> server network
+2. Bridge 		--> if you want to communicate multiple containers with in same machine
+3. Overlay		--> if you want to communicate multiple containers over multiple machines
+
+
+docker stack deploy nginx-deploy --compose-file docker-stack.yaml
+
+docker stack ls

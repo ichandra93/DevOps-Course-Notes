@@ -1,0 +1,69 @@
+Jenkins Master and Slave concept:
+---------------------------------
+Jenkins master 		--> Linux
+Slave				--> Java11
+
+Dynamic and Static Slave
+
+Dynamic Slaves	--> It will comeup at the of job is going to run
+				--> Container
+				--> Pods
+				--> EC2-Instance
+Static Slaves	--> It will be 24x7
+				--> EC2-Instance
+				
+Default port for Jenkins	--> 8080
+
+Master:
+-------
+	- Jenkins installation
+
+Slave:
+-----
+	- Java11
+	- User/SSH
+	
+Manage Jenkins	--> Manage Nodes and Clouds
+
+-------------------------------------------------
+pipeline{
+    agent {
+        label 'aws-node'
+    }
+    stages {
+        stage("Checkout") {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/Naresh240/springboot-hello.git'
+            }
+        }
+        stage("Build") {
+            steps {
+                sh "mvn clean install"
+            }
+        }
+    }
+}
+
+
+Jenkins Webhook:
+----------------
+A Webhook is a mechanism to automatically trigger the build of a Jenkins project in response to a commit pushed to a Git repository.
+
+Unser GitHub
+-------------
+github repository   --> settings	--> webhooks
+http://3.239.32.44:8080/github-webhook/
+
+Then enable "GitHub hook trigger for GITScm polling" in jenkins pipeline
+
+If you want to run job on a specific point of time:
+---------------------------------------------------
+Build periodically
+	--> cron expression
+Poll SCM
+	--> Cron expression
+	
+mm hrs day-of-the-month month day-of-the-week
+
+7 8 2 2 2

@@ -1,0 +1,68 @@
+package management:
+-------------------
+zip:
+----
+1. download zip file
+2. unzip 
+3. setting environment variables/run shell scripts
+
+Tomcat:
+-------
+pre-requisite:
+--------------
+	- java
+		yum install java-1.8.0-openjdk -y
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.70/bin/apache-tomcat-9.0.70.zip
+unzip apache-tomcat-9.0.70.zip
+cd apache-tomcat-9.0.70/bin
+chmod +x startup.sh
+chmod +x catalina.sh
+sh startup.sh
+
+Open port 8080 under security group
+
+check tomcat in UI: <ip-address>:<port>
+
+we need to get rpm 
+rpm --install <rpmfile>
+
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.17.8-x86_64.rpm
+rpm --install elasticsearch-7.17.8-x86_64.rpm
+service elasticsearch start
+
+Filters in linux:
+-----------------
+1. cat : Displays the text of the file line by line
+
+2. head : Displays the first n lines of the specified text files. If the number of lines is not specified then by default prints first 10 lines
+	head -n <file-name>
+	
+3. tail : It works the same way as head, just in reverse order. The only difference in tail is, it returns the lines from bottom to up.	
+	tail -n <file-name>
+	
+4. sort : Sorts the lines alphabetically by default but there are many options available to modify the sorting mechanism. Be sure to check out the main page to see everything it can do. 	
+	sort <file-name>
+	sort -r <file-name>
+
+5. uniq : Removes duplicate lines. uniq has a limitation that it can only remove continuous duplicate lines(although this can be fixed by the use of piping). Assuming we have the following data. 
+
+6. wc : wc command gives the number of lines, words and characters in the data. 
+	wc <file-name>
+	wc -l <file-name>
+	wc -w <file-name>
+	wc -c <file-name>
+	
+7. grep : grep is used to search a particular information from a text file.
+
+If you want to join two commands we need to use "|" (pipe symbol)
+
+grep <word> <file> | wc -l
+
+8. tac : tac is just the reverse of cat and it works the same way, i.e., instead of printing from lines 1 through n, it prints lines n through 1. It is just reverse of cat command. 
+
+9. sed : sed stands for stream editor. It allows us to apply search and replace operation on our data effectively. sed is quite an advanced filter and all its options can be seen on its man page.
+
+	sed s/search/replace/g <file-name>		--> it will just display content by replace
+	sed -i s/search/replace/g <file-name>	--> replace word will insert in file
+	
+10. nl : nl is used to number the lines of our text data. 	
