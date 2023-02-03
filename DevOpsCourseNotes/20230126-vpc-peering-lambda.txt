@@ -1,0 +1,79 @@
+VPC Peering:
+------------
+A VPC peering connection is a networking connection between two VPCs that enables you to route traffic between them using private IPv4 addresses or IPv6 addresses. Instances in either VPC can communicate with each other as if they are within the same network.
+
+1. Create vpc10 and vpc11
+2. create peering connection request by vpc10
+3. accept request by vpc11
+4. we need to add route in route table
+5. allow ports in security group
+
+Lambda:
+-------
+AWS Lambda is a serverless, event-driven compute service that lets you run code for virtually any type of application or backend service without provisioning or managing servers.
+
+AWS instance  
+	--> I want to check status everytime for a ec2 instance, whenever its going to be down need to get some notification
+
+We are going to be create some event under clouwatch
+
+cloudwatch  --> logging, Alarms, metrics, rules, events
+
+I want to start ec2 instance on every monday at 9am and stop on every Friday 7pm
+
+
+
+import boto3
+client = boto3.client('ec2')
+
+def lambda_handler(event, context):
+	response = client.start_instances(
+		InstanceIds=[
+			'string',
+		],
+		AdditionalInfo='string',
+		DryRun=True|False
+	)
+	return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
+	
+
+import boto3
+region = 'us-west-1'
+instances = ['i-12345cb6de4f78g9h', 'i-08ce9b2d7eccf6d26']
+ec2 = boto3.client('ec2', region_name=region)
+
+def lambda_handler(event, context):
+    ec2.stop_instances(InstanceIds=instances)
+    print('stopped your instances: ' + str(instances))
+	
+
+AWS cron(fields):
+-----------------
+Minutes		Hours 	Day-of-month 	Month	Day-of-week		Year
+
+7 11 26 1 ? 2023
+
+
+ec2  --> stopped
+	 --> lambda should be trigger
+	 --> send notification to SNS
+
+-----------------------------------------------------------	
+import json
+import boto3
+
+def lambda_handler(event, context):
+   notification = "Here is the SNS notification for Lambda function tutorial."
+   client = boto3.client('sns')
+   response = client.publish (
+      TargetArn = "arn:aws:sns:us-east-1:035756276524:ec-instance-down",
+      Message = json.dumps({'default': notification}),
+      MessageStructure = 'json'
+   )
+   return {
+      'statusCode': 200,
+      'body': json.dumps(response)
+   }

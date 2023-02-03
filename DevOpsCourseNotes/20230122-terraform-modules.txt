@@ -1,0 +1,100 @@
+Terraform Modules:
+------------------
+ec2-instance  --> script
+
+network	(vpc) --> ec2
+			  --> eks
+			  --> eb
+
+
+Launch configuration
+	--> ASG
+	--> EKS node group
+	
+A module allows you to group resources together and reuse this group later, possibly many times	
+
+
+
+source  = "git@github.com:Naresh240/terraform-ec2-module.git?ref=master"
+
+difference between variables.tf and tfvars
+
+variables files is going to be using to define the variables
+tfvars is going to be using to pass the values to variables
+
+terraform.tfvars		--> default name of tfvars file
+if terraform.tfvars name is changing as dev.tfvars, we need to pass variable file name as well in command
+
+terraform destroy -auto-approve -var-file="dev.tfvars"
+
+--------------------------------------------
+Create terraform module for ec2 under SCM
+--------------------------------------------
+resource "aws_instance" "example" {
+  ami               = var.ami_id
+  instance_type     = var.inst_type
+  key_name          = var.key_name
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
+variable "ami_id" {
+  type    = string
+}
+
+variable "inst_type" {
+  type    = string
+}
+
+variable "key_name" {
+  type    = string
+}
+
+------------------------------------------------------
+Reusing the terraform module from SCM
+------------------------------------------------------
+provider "aws" {
+  region     = var.region
+  access_key = "AKIAQQUZ5PMWMHQIARJH"
+  secret_key = "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"  
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }  
+  }
+}
+
+module "instance" {
+  source    = "git@github.com:Naresh240/terraform-ec2-module.git?ref=master"
+
+  ami_id    = var.ami_id
+  inst_type = var.inst_type
+  key_name  = var.key_name
+}
+
+variable "ami_id" {
+  type    = string
+}
+
+variable "inst_type" {
+  type    = string
+}
+
+variable "region" {
+  type    = string
+}
+
+variable "key_name" {
+  type    = string
+}
+
+ami_id    = "ami-0b5eea76982371e91"
+inst_type = "t2.micro"
+region    = "us-east-1"
+key_name  = "weekend"

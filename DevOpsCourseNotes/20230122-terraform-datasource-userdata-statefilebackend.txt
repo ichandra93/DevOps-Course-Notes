@@ -1,0 +1,38 @@
+Data source in terraform:
+---------------------------
+Data sources in Terraform are used to get information about resources external to Terraform, and use them to set up your Terraform resources.
+
+state file:
+-----------
+The terraform state file, by default, is named terraform. tfstate and is held in the same directory where Terraform is run. It is created after running terraform apply . The actual content of this file is a JSON formatted mapping of the resources defined in the configuration and those that exist in your infrastructure
+
+user_data:
+----------
+resource "aws_instance" "example" {
+  ami               = var.ami_id
+  instance_type     = var.inst_type
+  key_name          = "weekend"
+  security_groups   = [aws_security_group.http_allow.name]
+  user_data = <<EOF
+    #!/bin/bash
+	sudo yum install git java-1.8.0-openjdk -y
+    sudo yum install -y httpd
+    sudo systemctl start httpd
+    sudo systemctl enable httpd
+    sudo chkconfig httpd on
+    echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html
+  EOF
+
+  tags = {
+    Name = "HelloWorld"
+  }
+}
+
+terraform state files:
+----------------------
+terraform destroy
+	-> it will read terraform state file and delete which resources are create with terrafom
+	
+backend		--> s3/http
+
+terraform init -backend-config="access_key=AKIAQQUZ5PMWMHQIARJH" -backend-config="secret_key=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"

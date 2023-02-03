@@ -1,0 +1,75 @@
+Ansible:
+--------
+1 server    -->  1min
+100 servers -->  100min
+
+I can connect all the servers and install package in that  --> 1min
+
+Configuration Management Tools  --> Ansible/Puppet/Chef
+
+Ansible Setup:
+--------------
+1. Take 2 machines (ansible, remote)
+2. Ansible need to run below commands
+	- Create private and public key	
+		ssh-keygen
+	- Install Ansible (pre-requisite: python)
+		amazon-linux-extras install ansible2 -y
+3. customer need to keep public key	in remote servers
+	${HOME}/.ssh/authorized_keys
+	/root/.ssh/authorized_keys
+	/home/ec2-user/.ssh/authorized_keys
+	/home/naresh/.ssh/authorized_keys
+4. We need to keep remote server hostnames/ip address in our inventory file
+
+	Default Inventory file path  --> /etc/ansible/hosts
+
+[webservers]
+54.165.80.133	
+	
+ansible -m ping <groupname>
+
+yum install java-1.8.0-openjdk -y
+yum install git -y
+
+ansible commands:
+------------------
+ansible -m yum -a 'name=java-1.8.0-openjdk state=present' webservers
+
+ansible -m yum -a 'name=git state=installed' webservers
+
+ansible -m file -a 'path=/root/example state=directory mode=0755' webservers
+
+
+playbooks:
+------------
+- name: Create a directory if it does not exist
+  file:
+    path: /etc/some_directory
+    state: directory
+    mode: '0755'
+	
+yaml file:
+-----------
+---
+- hosts: webservers
+  tasks:
+  - name: create file with devops.txt
+    file:
+      path: /root/devops.txt
+      state: touch
+      mode: '0644'
+
+ansible-playbook file.yaml --syntax-check
+ansible-playbook file.yaml
+
+---
+- hosts: webservers
+  tasks:
+  - name: install maven 
+    yum: 
+      name: maven
+      state: present
+	  
+ansible-playbook install.yaml --syntax-check
+ansible-playbook install.yaml	  
