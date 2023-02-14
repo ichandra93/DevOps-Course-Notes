@@ -1,0 +1,91 @@
+Ansible Roles:
+--------------
+tomcat   --> java
+jenkins	 --> java
+maven    --> java
+
+I can write script for java installation at one place and we can reuse those tasks
+
+ansible-galaxy init <role-name>
+
+--> folders
+1. default
+	--> main.yaml
+2. files
+3. templates
+4. tasks
+	--> main.yaml
+5. vars
+	--> main.yaml
+6. handlers
+7. meta
+8. tests
+
+---
+- hosts: localhost
+  tasks:
+  - name: install java
+    yum:
+      name: "java-{{ java_version }}"
+      state: present
+	  
+	 
+roles  --> tasks --> main.yaml
+-----------------------------
+- name: install java
+  yum:
+    name: "java-{{ java_version }}"
+    state: present
+	
+yum install httpd -y
+service httpd start
+
+tasks/main.yaml
+################
+---
+- name: install httpd
+  yum:
+    name: httpd
+    state: present
+- name: copy configuration file
+  copy:
+    src: files/httpd.conf
+    dest: /etc/httpd/conf
+    backup: yes
+  notify:
+  - restart httpd
+- name: copy index.html
+  copy:
+    src: files/index.html
+    dest: /var/www/html
+- name: start http application
+  service:
+    name: httpd
+    state: started
+	
+handlers/main.yaml
+####################
+---
+# handlers file for httpd
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted
+	
+files/index.html
+##################
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Welcome to Devops Course</h1>
+
+</body>
+</html>
+
+playbook.yaml
+###############
+---
+- hosts: localhost
+  roles:
+  - httpd

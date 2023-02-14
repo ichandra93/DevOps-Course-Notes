@@ -1,0 +1,162 @@
+Few modules in Ansible:
+-----------------------
+tomcat setup with ansible playbook:
+------------------------------------
+host as localhost
+
+default inventory file path - /etc/ansible/hosts
+
+1. we need to download tar file
+2. extract tar file
+3. we need to write service file
+4. run tomcat as a service
+
+If you want to run tomcat with tomcat user
+- create user
+- we need to change ownership for extracted file
+- and keep user in service file
+
+https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.85/bin/apache-tomcat-8.5.85.tar.gz
+
+---
+- hosts: localhost
+  tasks:
+  - name: check java installation
+    yum:
+      list: java-1.8.0-openjdk
+    register: check_java_existance
+  - name: Install java
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    when: check_java_existance.results | selectattr("yumstate","match","installed") | list | length == 0  
+  - name: Check Tomcat already exists or not
+    stat:
+      path: /opt/apache-tomcat-8.5.85.tar.gz
+    register: check_tomcat_existence
+  - name: print check_tomcat_existence
+    debug:
+      msg: "{{ check_tomcat_existence }}"
+  - name: download tar file of tomcat
+    get_url:
+      url: https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.85/bin/apache-tomcat-8.5.85.tar.gz
+      dest: /opt/apache-tomcat-8.5.85.tar.gz
+      mode: '0755'
+  - name: Extract tomcat tar file
+    unarchive:
+      src: /opt/apache-tomcat-8.5.85.tar.gz
+      dest: /opt
+  - name: Create Tomcat user and Group
+    user:
+      name: tomcat
+      state: present
+      comment: "user for comment"
+  - name: Change directory tomcat permissions
+    file:
+      path: /opt/apache-tomcat-8.5.85
+      state: directory
+      recurse: yes
+      owner: tomcat
+      group: tomcat
+      mode: '0755'
+  - name: tomcat service file template
+    template:
+      src: tomcat.service.j2
+      dest: ./tomcat.service
+  - name: Copy Tomcat service from local to remote
+    copy:
+      src: ./tomcat.service
+      dest: /etc/systemd/system/
+      mode: 0755
+      remote_src: yes
+  - name: just force systemd to reread configs (2.4 and above)
+    systemd:
+      daemon_reload: yes
+  - name: enable tomcat startup
+    service:
+      name: tomcat
+      state: restarted
+	  
+	 
+chmod -R tomcat:tomcat <tomcat-dir>
+tomcat.service
+
+template  --> tomcat.service.j2
+
+-------------------------------------
+[Unit]
+Description=Apache apache-tomcat-8.5.85 Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.352.b08-2.amzn2.0.1.x86_64/jre
+Environment=CATALINA_PID=/opt/apache-tomcat-8.5.85/temp/apache-tomcat-8.5.85.pid
+Environment=CATALINA_HOME=/opt/apache-tomcat-8.5.85
+Environment=CATALINA_BASE=/opt/apache-tomcat-8.5.85
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+ExecStart=/opt/apache-tomcat-8.5.85/bin/startup.sh
+ExecStop=/bin/kill -15 $MAINPID
+
+User=tomcat
+Group=tomcat
+
+[Install]
+WantedBy=multi-user.target
+----------------------------------------------------------------
+
+Variables Decalration in Playbooks:
+-----------------------------------
+---
+- hosts: localhost
+  vars:
+    country_name: India
+  tasks:
+  - name: print variable value
+    debug:
+      msg: "Country name is {{ country_name }}"
+
+ansible-playbook variable_declare.yaml
+
+---
+- hosts: localhost
+  tasks:
+  - name: print variable value
+    debug:
+      msg: "Country name is {{ country_name }}"
+ansible-playbook variable_declare.yaml --extra-vars country_name=India
+
+
+Jinja templates:
+----------------
+variables_file.js
+--------------------
+Name: {{ Employee_Name }}
+Designation: {{ Employee_Designation }}
+
+---
+- hosts: localhost
+  vars:
+    Employee_Name: Naresh
+    Employee_Designation: Devops_Engineer
+  tasks:
+  - name: change values in template file
+    template:
+      src: ./variables_file.js
+      dest: /opt
+
+ansible-playbook jinja-template.yaml
+	  
+---
+- hosts: localhost
+  tasks:
+  - name: change values in template file
+    template:
+      src: ./variables_file.js
+      dest: /opt
+
+ansible-playbook jinja-template.yaml --extra-vars Employee_Name=Naresh --extra-vars Employee_Designation=Devops_Engineer
+
+Ansible uses Jinja2 templating to enable dynamic expressions and access to variables. Ansible greatly expands the number of filters and tests available, as well as adding a new plugin type: lookups.	  

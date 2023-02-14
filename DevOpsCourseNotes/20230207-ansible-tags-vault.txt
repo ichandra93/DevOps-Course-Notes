@@ -1,0 +1,229 @@
+Variables in ansible:
+---------------------
+
+[Unit]
+Description=Apache apache-tomcat-{{ tomcat_version }} Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.352.b08-2.amzn2.0.1.x86_64/jre
+Environment=CATALINA_PID={{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}/temp/apache-tomcat-{{ tomcat_version }}.pid
+Environment=CATALINA_HOME={{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}
+Environment=CATALINA_BASE={{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+ExecStart={{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}/bin/startup.sh
+ExecStop=/bin/kill -15 $MAINPID
+
+User=tomcat
+Group=tomcat
+
+[Install]
+WantedBy=multi-user.target
+############################################################
+---
+- hosts: localhost
+  vars:
+    java_version: java-1.8.0-openjdk
+    tomcat_directory: /opt
+    tomcat_version: 9.0.71
+    tomcat_url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.71/bin/apache-tomcat-9.0.71.tar.gz
+  tasks:
+  - name: Check if java rpm is already installed or not
+    yum:
+      list: "{{ java_version }}"
+    register: check_java_existence
+  - name : Install java
+    yum:
+      name: "{{ java_version }}"
+      state: present
+    when: check_java_existence.results | selectattr("yumstate", "match", "installed") | list | length == 0
+  - name: Check Tomcat already exists or not
+    stat:
+      path: "{{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    register: check_tomcat_existence
+  - name: print check_tomcat_existence
+    debug:
+      msg: "{{ check_tomcat_existence }}"
+  - name: download tomcat url
+    get_url:
+      url: "{{ tomcat_url }}"
+      dest: "{{ tomcat_directory }}"
+      mode: 0777
+    when: not check_tomcat_existence.stat.exists
+  - name: extract tomcat
+    unarchive:
+      src: "{{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}.tar.gz"
+      dest: "{{ tomcat_directory }}"
+      remote_src: True
+  - name: Create Tomcat user and Group
+    user:
+      name: tomcat
+      state: present
+      comment: "user for comment"
+  - name: Change directory tomcat permissions
+    file:
+      path: "{{ tomcat_directory }}/apache-tomcat-{{ tomcat_version }}"
+      state: directory
+      recurse: yes
+      owner: tomcat
+      group: tomcat
+      mode: '0755'
+
+How to deploy applications with Ansible:
+----------------------------------------
+---
+- hosts: localhost
+  tasks:
+  - name: install docker
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - docker
+    - python-pip
+  - name: start docker service
+    service:
+      name: docker
+      state: started
+  - name: install docker-py module
+    pip:
+      name: docker-py
+
+Create container:
+-----------------
+---
+- hosts: localhost
+  tasks:
+  - name: create and start a nginx container
+    docker_container:
+      name: nginx-container
+      image: nginx
+      state: started
+      recreate: yes
+      ports:
+        - 80:80
+		
+Tags:
+-----
+	- If you want to run specific task, we can use tags in playbooks
+	
+---
+- hosts: localhost
+  tasks:
+  - name: create and start a nginx container
+    docker_container:
+      name: nginx-container
+      image: nginx
+      state: started
+      recreate: yes
+      ports:
+        - 80:80
+    tags: create
+  - name: remove a nginx container
+    docker_container:
+      name: nginx-container
+      image: nginx
+      state: absent
+      recreate: yes
+      ports:
+        - 80:80
+    tags: remove
+
+Ansible Vault:
+--------------
+Ansible Vault is a feature of ansible that allows you to keep sensitive data such as passwords or keys in encrypted files, rather than as plaintext in playbook
+---
+- hosts: localhost
+  tasks:
+  - name: Install mysql packages
+    docker_container:
+      name: mysql-container
+      image: mysql:5.7
+      state: started
+      recreate: yes
+      ports:
+      - 3306:3306
+      volumes:
+      - /var/lib/mysql
+      env:
+        MYSQL_ROOT_PASSWORD: Naresh#240
+        MYSQL_DATABASE: employeedb
+        MYSQL_USER: naresh
+        MYSQL_PASSWORD: Naresh#240
+    tags: create
+  - name: Remove mysql packages
+    docker_container:
+      name: mysql-container
+      image: mysql:5.7
+      state: absent
+      recreate: yes
+      ports:
+      - 3306:3306
+      volumes:
+      - /var/lib/mysql
+      env:
+        MYSQL_ROOT_PASSWORD: Naresh#240
+        MYSQL_DATABASE: employeedb
+        MYSQL_USER: naresh
+        MYSQL_PASSWORD: Naresh#240
+    tags: remove
+	
+mysql-password.yaml
+--------------------
+db_password: Naresh#240
+
+ansible-vault encrypt mysql-password.yaml
+ansible-vault view mysql-password.yaml
+ansible-vault edit mysql-password.yaml
+ansible-vault decrypt mysql-password.yaml
+
+---
+- hosts: localhost
+  vars_files:
+  - mysql-password.yaml
+  tasks:
+  - name: Install mysql packages
+    docker_container:
+      name: mysql-container
+      image: mysql:5.7
+      state: started
+      recreate: yes
+      ports:
+      - 3306:3306
+      volumes:
+      - /var/lib/mysql
+      env:
+        MYSQL_ROOT_PASSWORD: "{{ db_password }}"
+        MYSQL_DATABASE: employeedb
+        MYSQL_USER: naresh
+        MYSQL_PASSWORD: "{{ db_password }}"
+    tags: create
+  - name: Remove mysql packages
+    docker_container:
+      name: mysql-container
+      image: mysql:5.7
+      state: absent
+      recreate: yes
+      ports:
+      - 3306:3306
+      volumes:
+      - /var/lib/mysql
+      env:
+        MYSQL_ROOT_PASSWORD: "{{ db_password }}"
+        MYSQL_DATABASE: employeedb
+        MYSQL_USER: naresh
+        MYSQL_PASSWORD: "{{ db_password }}"
+    tags: remove
+
+ansible-playbook mysql.yaml --ask-vault-pass --tags=create
+ansible-playbook mysql.yaml --ask-vault-pass --tags=remove
+
+valut_pass.yaml
+---------------
+Admin#123
+
+ansible-playbook mysql.yaml --vault-password-file valut_pass.yaml --tags=create
+ansible-playbook mysql.yaml --vault-password-file valut_pass.yaml --tags=remove

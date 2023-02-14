@@ -1,0 +1,131 @@
+Ansible Playbooks:
+------------------
+Linux
+
+Inventory file:
+----------------
+[webservers]
+hostname1
+hostname2
+hostname3
+
+ansible -m ping webservers
+
+hostname1			--> Linux
+	ping: pong
+hostname2			--> ubuntu
+	ping: pong
+hostname3			--> linux
+	ping: pong
+
+
+Linux:
+	yum install java-1.8.0-openjdk -y
+ubuntu:
+	apt-get install openjdk-8-jdk -y
+	
+
+---
+- hosts: webservers
+  tasks:
+  - name: Install java on linux
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    when: ansible_os_family == "RedHat"
+  - name: update os of ubuntu
+    apt:
+      upgrade: yes
+      update_cache: yes
+    when: ansible_os_family == "Debian"
+  - name: Install java on ubuntu
+    apt:
+      name: openjdk-8-jdk
+      state: present
+    when: ansible_os_family == "Debian"
+	
+
+/etc/ansible/hosts	--> default inventory file
+	ansible -m ping <group-name>
+	
+hosts --> our own inventory file I have created
+	ansible -i hosts -m ping <group-name>
+	
+register in ansible:
+--------------------
+It will use to store output a specific task in a specific variable
+
+debug - Print statements during execution
+
+
+---
+- hosts: webservers
+  tasks:
+  - name: Install java on linux
+    yum:
+      list: java-1.8.0-openjdk
+    register: check_java_existance
+    when: ansible_os_family == "RedHat"
+  - name: print register value
+    debug:
+      msg: "{{ check_java_existance }}"
+	  
+	 
+---
+- hosts: webservers
+  tasks:
+  - name: Install java on linux
+    yum:
+      list: java-1.8.0-openjdk
+    register: check_java_existance
+    when: ansible_os_family == "RedHat"
+  - name: print register value
+    debug:
+      msg: "{{ check_java_existance }}"
+  - name: Install java on linux
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    when:
+      - ansible_os_family == "RedHat"
+      - check_java_existance.results | selectattr("yumstate","match","installed") | list | length == 0
+	 
+---
+- hosts: webservers
+  tasks:
+  - name: Install git on linux
+    yum:
+      name: git
+      state: present
+  - name: Install maven on linux
+    yum:
+      name: maven
+      state: present
+  - name: Install docker on linux
+    yum:
+      name: docker
+      state: present
+  - name: start docker service
+    service:
+      name: docker
+      state: started
+	  
+(or)
+
+---
+- hosts: webservers
+  tasks:
+  - name: Install git, maven, docker on linux
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - git
+    - maven
+    - docker
+    when: ansible_os_family == "RedHat"
+  - name: start docker service
+    service:
+      name: docker
+      state: started
+    when: ansible_os_family == "RedHat"
