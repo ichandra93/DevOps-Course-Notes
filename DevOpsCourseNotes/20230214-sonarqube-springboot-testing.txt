@@ -1,0 +1,10 @@
+How to test application with sonarqube:
+---------------------------------------
+psql -U sonarqube -d sonarqubedb
+
+
+sonar-scanner -Dsonar.projectKey=hellospringboot -Dsonar.projectName=hellospringboot  -Dsonar.sources=src -Dsonar.java.binaries=.
+
+sonar.sourceEncoding=UTF-8
+
+e1088184bcfd2306580822ca4958a7f24eef674f
