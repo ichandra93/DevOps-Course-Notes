@@ -1,0 +1,80 @@
+How to deploy application in kubernates with a secure:
+------------------------------------------------------
+eksctl create cluster --name=eksdemo \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+	      --version 1.22 \
+	      --without-nodegroup 
+		  
+
+eksctl create nodegroup --cluster=eksdemo \
+                   --region=us-east-1 \
+                   --name=eksdemo-ng-public \
+                   --node-type=t2.small \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=aws9pm \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+				   
+eksctl utils associate-iam-oidc-provider --region=us-east-1 --cluster=eksdemo --approve	 			   
+				   
+ALB ingress controller Setup: (>1.22)
+------------------------------
+
+1. Create an IAM policy
+
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.7/docs/install/iam_policy.json
+
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json		  
+	
+2. Create an IAM role
+
+eksctl create iamserviceaccount \
+  --cluster=eksdemo \
+  --region=us-east-1 \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::638843389611:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+  
+IAM Service account  
+	--> Will create role in aws with some policy
+	--> It will create service account in kubernetes
+	--> Then it will add IAM role arn to service account
+	--> Also it will add OIDC provider to role as a trust relationship policy
+
+3. Install the AWS Load Balancer ingress Controller	
+  a. Install cert-manager 
+	kubectl apply \
+    --validate=false \
+    -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+  b. Download the controller specification
+	curl -Lo v2_4_7_full.yaml https://github.com/kubernetes-sigs/aws-load-balancer-controller/releases/download/v2.4.7/v2_4_7_full.yaml
+  c. delete service account from controller file
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: aws-load-balancer-controller
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  
+  d. Add cluster name under file
+	sed -i.bak -e 's|your-cluster-name|eksdemo|' ./v2_4_7_full.yaml
+
+  e. deploy alb ingress controller
+	kubectl apply -f v2_4_7_full.yaml
+

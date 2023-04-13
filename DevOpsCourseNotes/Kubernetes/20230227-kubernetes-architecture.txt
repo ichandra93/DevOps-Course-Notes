@@ -1,0 +1,54 @@
+kubernetes:
+-----------
+Clusters are going to be using for High Availability
+
+Multiple servers
+
+master and node archetecture
+
+Master is having 4 components:
+	- API Server
+	- ETCD
+	- Scheduler
+	- Controller Manager
+Node is having 4 components:
+	- Kubelet
+	- Container Engine
+	- Service Proxy
+	- IP Tables
+	
+deployment file
+----------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80	
+		
+1. kubectl writes to the API Server.
+2. API Server validates the request and persists it to etcd.
+3. etcd notifies back the API Server.
+4. API Server invokes the Scheduler.
+5. Scheduler decides where to run the pod on and return that to the API Server.
+6. API Server persists it to etcd.
+7. etcd notifies back the API Server.
+8. API Server invokes the Kubelet in the corresponding node.
+9. Kubelet talks to the Docker daemon using the API over the Docker socket to create the container.
+10. Kubelet updates the pod status to the API Server.
+11. API Server persists the new state in etcd.		

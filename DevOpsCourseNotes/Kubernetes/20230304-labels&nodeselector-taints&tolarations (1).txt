@@ -1,0 +1,121 @@
+Bare metals:
+------------
+kubeadm
+kubekops
+
+EKS Cluster Setup:
+------------------
+EKS  --> Elastic Kubernetes Service
+
+cloudformation
+eksctl
+awscli
+terraform
+
+master
+nodegroup
+
+eksctl create cluster --name my-cluster --region region-code
+
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/bin
+eksctl version
+
+eksctl create cluster --name=eksdemo \
+                  --region=us-east-1 \
+                  --zones=us-east-1a,us-east-1b \
+	      --version 1.24 \
+	      --without-nodegroup
+		 
+eksctl create nodegroup --cluster=eksdemo \
+                   --region=us-east-1 \
+                   --name=eksdemo-ng-public \
+                   --node-type=t2.small \
+                   --nodes=2 \
+                   --nodes-min=2 \
+                   --nodes-max=4 \
+                   --node-volume-size=10 \
+                   --ssh-access \
+                   --ssh-public-key=aws9pm \
+                   --managed \
+                   --asg-access \
+                   --external-dns-access \
+                   --full-ecr-access \
+                   --appmesh-access \
+                   --alb-ingress-access	
+				   
+labels & node selector:
+-----------------------
+1. we need to create label on a specific node
+	--> this label will block others to deploy their applications on a specific node
+2. use node selector under deploy, then only can deploy applications on specific node
+	
+	
+kubectl label node <node-name> <key>=<value>
+
+kubectl label node ip-192-168-11-72.ec2.internal app=nginx
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-hello
+  labels:
+    app: springboot-hello
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-hello
+  template:
+    metadata:
+      labels:
+        app: springboot-hello
+    spec:
+      containers:
+      - name: springboot-hello
+        image: naresh240/springboothello:v1
+        ports:
+        - containerPort: 8080
+
+kubectl label node ip-192-168-11-72.ec2.internal app-
+
+taints & tolarations:
+---------------------
+kubectl taint node ip-192-168-11-72.ec2.internal app=nginx:NoExecute
+
+1. if there is at least one un-ignored taint with effect NoSchedule then Kubernetes will not schedule the pod onto that node
+2. if there is no un-ignored taint with effect NoSchedule but there is at least one un-ignored taint with effect PreferNoSchedule then Kubernetes will try to not schedule the pod onto the node
+3. if there is at least one un-ignored taint with effect NoExecute then the pod will be evicted from the node (if it is already running on the node), and will not be scheduled onto the node (if it is not yet running on the node).
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-hello
+  labels:
+    app: springboot-hello
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-hello
+  template:
+    metadata:
+      labels:
+        app: springboot-hello
+    spec:
+      nodeSelector:
+        app: nginx
+      tolerations:
+      - key: app
+        operator: Equal
+        value: nginx
+        effect: NoExecute
+      containers:
+      - name: springboot-hello
+        image: naresh240/springboothello:latest
+        ports:
+        - containerPort: 8080

@@ -1,0 +1,69 @@
+Deployment stratergies:
+-----------------------
+1. Rolling update and Rollback
+2. Blue and Green Deployment
+3. Canary Deployment
+
+Rolling update and Rollback:
+----------------------------
+updating image tags with commands
+
+minReadySeconds:
+	It tells Kubernetes how long it should wait until it creates the next pod. This property ensures that all application pods are in the ready state during the update.
+maxSurge:
+	It specifies the maximum number (or percentage) of pods above the specified number of replicas. In the example above, the maximum number of pods will be 5 since 4 replicas are specified in the yaml file.
+maxUnavailable:
+	It declares the maximum number (or percentage) of unavailable pods during the update. If maxSurge is set to 0, this field cannot be 0.
+
+
+RollingUpdate:
+------------------
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 1
+	  
+	 
+kubectl rollout history deployment nodejs-deployment
+kubectl rollout history deployment nodejs-deployment --revision=1
+kubectl set image deployment nodejs-deployment nodejs-deployment=naresh240/nodejs-k8s:v2
+kubectl rollout undo deployment nodejs-deployment --to-revision=1
+
+Blue and Green Deployment:
+--------------------------
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nodejs-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejs-service-blue
+            port:
+              number: 8080
+			  
+Canary deployment:
+------------------
+
+kubectl get namespace istio-system -o json > tempfile.json
+
+kubectl replace --raw "/api/v1/namespaces/istio-system/finalize" -f ./tempfile.json
+
+istioctl:
+---------
+cd ~
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 sh -
+sudo cp istio-1.17.1/bin/istioctl /usr/bin/
+sudo chmod +x /usr/bin/istioctl
+istioctl version

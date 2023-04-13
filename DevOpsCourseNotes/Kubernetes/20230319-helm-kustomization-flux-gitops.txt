@@ -1,0 +1,111 @@
+Helm Charts:
+------------
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+sh get_helm.sh
+
+helm create <name-of-the-chart>
+
+springboot
+    ├── Chart.yaml
+    ├── charts
+    ├── templates
+    │   ├── NOTES.txt
+    │   ├── _helpers.tpl
+    │   ├── deployment.yaml
+    │   ├── hpa.yaml
+    │   ├── ingress.yaml
+    │   ├── service.yaml
+    │   ├── serviceaccount.yaml
+    │   └── tests
+    │       └── test-connection.yaml
+    └── values.yaml
+	
+helm install chart <name-of-the-chart>
+
+helm upgrade chart <name-of-the-chart>
+
+
+helm list
+
+
+# Chart.yaml
+dependencies:
+- name: nginx
+  version: "1.2.3"
+  repository: "https://example.com/charts"
+  
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo list
+helm search repo bitnami
+helm install mysql-release bitnami/mysql
+
+helm package springboot
+
+helm delete <name-of-the-chart>
+
+kustomization:
+--------------
+kubectl apply -k .
+
+fluxcd:
+-------
+export VERSION_FLUX=0.30.2 
+curl -LO https://github.com/fluxcd/flux2/releases/download/v0.30.2/flux_0.30.2_linux_amd64.tar.gz
+tar -xvzf flux_0.30.2_linux_amd64.tar.gz
+chmod +x flux 
+mv flux /usr/bin/
+
+export GITHUB_TOKEN=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
+
+flux bootstrap github \
+  --owner=Naresh240 \
+  --repository=flux-weekend \
+  --branch=master \
+  --path=kubernates \
+  --personal
+  
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./nginx-deploy
+  prune: true
+  wait: true
+  timeout: 2m
+  
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: nginx-repo
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  url: https://github.com/Naresh240/k8s-nginx-deploy
+  ref:
+    branch: master
+	
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: nginx-repo
+  path: .
+  prune: true
+  wait: true
+  timeout: 2m

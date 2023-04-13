@@ -1,0 +1,21 @@
+Auto scaling in kubernetes:
+---------------------------
+1. Horizontal Pod Autoscaling	--> Application/Pod level
+2. Vertical Pod Autoscaling		--> Application/Pod level
+3. Cluster Autoscaler			--> Cluster/Node level
+	
+pre-requisite:
+--------------
+install metric server
+
+Horizontal:
+-----------
+It will scale up/down number of pods
+
+Vertical:
+---------
+It will scale up or scale down cpu/memory utilization but not number of pods
+
+Cluster Autoscaler:
+-------------------
+It will increase number of nodes

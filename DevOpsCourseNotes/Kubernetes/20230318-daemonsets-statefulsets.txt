@@ -1,0 +1,103 @@
+Elasticsearch and Kibana:
+-------------------------
+/etc/yum.repos.d/elasticsearch.repo
+-------------------------------------
+[elasticsearch]
+name=Elasticsearch repository for 8.x packages
+baseurl=https://artifacts.elastic.co/packages/8.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+
+yum install elasticsearch -y
+
+
+/etc/elasticsearch/elasticsearch.yml
+--------------------------------------
+network.host: 0.0.0.0
+xpack.security.enabled: false
+
+systemctl start elasticsearch
+
+yum install kibana -y
+
+/etc/kibana/kibana.yml
+----------------------
+server.port: 5601
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://localhost:9200"
+
+systemctl start kibana
+
+
+Deamonsets:
+-----------
+What is DaemonSet in Kubernetes?
+A DaemonSet ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created.
+
+Statefulsets:
+-------------
+These statefulsets are using for databased mainly
+Pod names will comeup with static names
+	pod-0
+	pod-1
+	pod-2
+Even pods will be create or delete 1 by 1
+Statefulsets are using headless services
+	clusterIp: none
+Each pod is having their own pv and pvc
+Here we are creating master replicas
+
+Databases  --> master and read replicas
+
+master will have read and write access
+read replicas is having only read access
+
+
+pv and pvc  --> volume requires type of volumes (ebs/nfs)
+
+storage class:
+--------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: cassandra-sc
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+ 
+pv
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cassandra-pv
+  labels:
+    type: local
+spec:
+  storageClassName: cassandra-sc
+  capacity:
+    storage: 250Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+  persistentVolumeReclaimPolicy: Retain
+ 
+pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cassandra-pv-claim
+  labels:
+    type: local
+spec:
+  storageClassName: cassandra-sc
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 250Mi

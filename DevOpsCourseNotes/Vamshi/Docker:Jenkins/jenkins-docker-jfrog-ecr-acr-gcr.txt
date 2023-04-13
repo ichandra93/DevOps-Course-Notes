@@ -1,0 +1,454 @@
+jenkins pipeline to upload/push docker image to jfrog artifactory
+################################################################
+1.create jenkins server and install git, java,maven and docker there
+
+we will try to push imahe to jfrog
+
+###########################################
+
+jaganreddy.jfrog.io/docker
+
+docker login -u narapureddyvenkatajagan@gmail.com -p cmVmdGtuOjAxOjE3MDkxNDg0NTc6Mm1QN2JCcUVmd2FNZDl0WkhjU1VsanFsbzVo jaganreddy.jfrog.io/docker
+
+store jfrog credentials in jenkins credentisla sections
+
+
+stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t jaganreddy.jfrog.io/docker/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+}
+}
+
+
+#################
+final working pipeline
+######################
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'branch': 'master',url:'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git'
+            }
+        }
+        
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t jaganreddy.jfrog.io/docker/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to jfrog and push the docker image'){
+            steps{
+                withCredentials([string(credentialsId: 'jfrog-docker-password', variable: 'password')]) {
+    sh 'docker login -u narapureddyvenkatajagan@gmail.com -p ${password} jaganreddy.jfrog.io/docker'
+    sh 'docker image push jaganreddy.jfrog.io/docker/springboot-maven-course-micro-svc:${BUILD_NUMBER}'
+}
+            }
+        }
+
+    }
+}
+
+
+######################
+few comapnies will use aws ecr or azure acr or google gcr
+##########################################################
+if we are using aws ecr our login command and build and push commands will chnage
+
+create a repository in aws ecr
+#####################################
+
+
+811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo
+
+
+1.login to ecr repo
+2.build 
+3.push
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 811502318109.dkr.ecr.us-east-1.amazonaws.com
+docker build -t mar2repo .
+docker tag mar2repo:latest 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:latest
+docker push 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:latest
+
+
+ec2 should be able to access ECR
+1.create iam role and attache role to ec2 instance
+2.create iam user and then use access key and secret acess key
+
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'branch': 'master',url:'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git'
+            }
+        }
+        
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to jfrog and push the docker image'){
+            steps{
+    sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 811502318109.dkr.ecr.us-east-1.amazonaws.com'
+    sh 'docker image push 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER}'
+            }
+        }
+
+    }
+}
+
+
+approach-1 
+###############
+ stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to jfrog and push the docker image'){
+            steps{
+    sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 811502318109.dkr.ecr.us-east-1.amazonaws.com'
+    sh 'docker image push 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER}'
+            }
+        }
+		
+#############################
+
+if we dont want to use iam role we can use iam user approach
+AKIA3Z4KOWIO7XRCDVT3
+80N0gBSKyjGBkIZpP7yvm0Zycd+fLePDBbbQ5MUn
+
+
+############################
+we need to use pipelines from jenkins to do with ec2 user credentisla
+
+environment {
+    registry = '811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo'
+    registryCredential = 'aws-ecr-credentails'
+    dockerImage = ''
+  }
+  
+  
+stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+	stage('Deploy image') {
+        steps{
+            script{
+                docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                    dockerImage.push()
+                }
+            }
+        }
+    }
+	
+	
+################
+final working pipeline
+######################
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    environment {
+    registry = '811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo'
+    registryCredential = 'aws-ecr-credentails'
+    dockerImage = ''
+  }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'branch': 'master',url:'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git'
+            }
+        }
+        
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+       stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+	stage('Deploy image') {
+        steps{
+            script{
+                docker.withRegistry("https://" + registry, "ecr:us-east-1:" + registryCredential) {
+                    dockerImage.push()
+                }
+            }
+        }
+    }
+
+    }
+}
+
+
+
+stage('Build') { 
+            steps { 
+                script{
+                 app = docker.build("mar2repo")
+                }
+            }
+        }
+		
+		stage('Deploy to ECR with another approach') {
+            steps {
+                script{
+                        docker.withRegistry('https://811502318109.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ecr-credentails') {
+                    app.push("${env.BUILD_NUMBER}")
+                    app.push("latest")
+                    }
+                }
+            }
+        }
+		
+		
+Approach-3
+##################
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    environment {
+    registry = '811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo'
+    registryCredential = 'aws-ecr-credentails'
+    dockerImage = ''
+  }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'branch': 'master',url:'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git'
+            }
+        }
+        
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+       
+     stage('Build') { 
+            steps { 
+                script{
+                 app = docker.build("mar2repo")
+                }
+            }
+        }
+	
+    
+    stage('Deploy to ECR with another approach') {
+            steps {
+                script{
+                        docker.withRegistry('https://811502318109.dkr.ecr.us-east-1.amazonaws.com', 'ecr:us-east-1:aws-ecr-credentails') {
+                    app.push("${env.BUILD_NUMBER}")
+                    app.push("latest")
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+
+#####################
+they are using azure acr
+##################################
+
+stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to jfrog and push the docker image'){
+            steps{
+    sh 'aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 811502318109.dkr.ecr.us-east-1.amazonaws.com'
+    sh 'docker image push 811502318109.dkr.ecr.us-east-1.amazonaws.com/mar2repo:${BUILD_NUMBER}'
+            }
+        }
+		
+		
+		
+stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t march2vamsikrm.azurecr.io/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to azure acr and push the docker image'){
+            steps{
+    sh 'docker login -u march2vamsikrm -p mgpXt2i0BprJiSym9s6kEj5T4+s+1ihBt5neO+X+tl+ACRAP6kyO march2vamsikrm.azurecr.io'
+    sh 'docker image push march2vamsikrm.azurecr.io/springboot-maven-course-micro-svc:${BUILD_NUMBER}'
+            }
+        }
+		
+#################
+final working pipeline
+######################
+pipeline{
+    agent any
+    tools{
+        maven 'maven-3.9.0'
+    }
+    stages{
+        stage('git checkout'){
+            steps{
+                git 'branch': 'master',url:'https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git'
+            }
+        }
+        
+        stage('build maven project'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+       
+stage('build docker image from dockerfile'){
+steps{
+sh 'docker image build -t march2vamsikrm.azurecr.io/springboot-maven-course-micro-svc:${BUILD_NUMBER} .'
+}
+}
+
+        stage('login to azure acr and push the docker image'){
+            steps{
+    sh 'docker login -u march2vamsikrm -p mgpXt2i0BprJiSym9s6kEj5T4+s+1ihBt5neO+X+tl+ACRAP6kyO march2vamsikrm.azurecr.io'
+    sh 'docker image push march2vamsikrm.azurecr.io/springboot-maven-course-micro-svc:${BUILD_NUMBER}'
+            }
+        }
+
+    }
+}
+
+##################
+Google GCR
+#########################
+
+
+like iam in aws in gcp we have IAM and Security
+in aws we create iam role and iam user
+in gcp we create service account
+##########################################
+using service account we login to googgle cloud
+and then using google cloud cli or regular docker commands
+we can push the image to GCR 
+
+1.make sure google cloud cli is installed
+2.create a service account
+3.login to goggle cloud using service account json file created
+
+gcloud auth activate-service-account —-key-file=/home/ec2-user/test.json —-project=moonlit-rock-369622
+
+gcloud config set project moonlit-rock-369622
+sudo yum install docker -y
+systemctl start docker.service
+gcloud auth print-access-token | docker login -u oauth2accesstoken    --password-stdin https://gcr.io
+
+export GOOGLE_CLOUD_PROJECT=moonlit-rock-369622
+export GIT_COMMIT=`git rev-parse --short HEAD`
+docker build -t gcr.io/$GOOGLE_CLOUD_PROJECT/python-flask-docker-project:$GIT_COMMIT .
+
+
+peaceful-basis-372421-553894a70c0c.json
+
+using the created json file we can login/authenticte to gcp accoint
+
+gcloud auth activate-service-account —-key-file=/home/ec2-user/peaceful-basis-372421-553894a70c0c.json —-project=peaceful-basis-372421
+
+Azure login server: march2vamsikrm.azurecr.io
+GCP Login for docker: https://gcr.io
+export GOOGLE_CLOUD_PROJECT=peaceful-basis-372421
+docker image  build -t gcr.io/$GOOGLE_CLOUD_PROJECT/springboot-maven-course-micro-svc:v1 .
+
+#####################
+   18  sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo << EOM
+[google-cloud-cli]
+name=Google Cloud CLI
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el8-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOM
+
+   19  sudo yum install google-cloud-cli -y
+   20  cd /home/ec2-user/
+   21  ls
+   22  vi peaceful-basis-372421-553894a70c0c.json
+   23  gcloud auth activate-service-account —-key-file=/home/ec2-user/peaceful-basis-372421-553894a70c0c.json —-project=peaceful-basis-372421
+   24  gcloud auth activate-service-account --key-file=/home/ec2-user/peaceful-basis-372421-553894a70c0c.json --project=peaceful-basis-372421
+   25  gcloud auth list
+   26  gcloud auth print-access-token | docker login -u oauth2accesstoken    --password-stdin https://gcr.io
+   27  git clone https://github.com/cloudtechmasters/springboot-maven-course-micro-svc.git
+   28  cd springboot-maven-course-micro-svc/
+   29  ls
+   30  export GOOGLE_CLOUD_PROJECT=peaceful-basis-372421
+   31  docker image  build -t gcr.io/$GOOGLE_CLOUD_PROJECT/springboot-maven-course-micro-svc:v1 .
+   32  /tmp/apache-maven-3.9.0/bin/mvn clean package
+   33  docker image  build -t gcr.io/$GOOGLE_CLOUD_PROJECT/springboot-maven-course-micro-svc:v1 .
+   34  docker image push gcr.io/peaceful-basis-372421/springboot-maven-course-micro-svc:v1
+   35  history
+
+#####################################
+withCredentials([file(credentialsId: 'peaceful-basis-372421', variable: 'GC_KEY')]) {
+    sh("gcloud auth activate-service-account --key-file=${GC_KEY}")
+    sh("gcloud container clusters get-credentials prod --zone northamerica-northeast1-a --project ${project}")
+  }
+  
+ environment{
+ GOOGLE_CLOUD_PROJECT=peaceful-basis-372421
+ }
+withCredentials([file(credentialsId: 'peaceful-basis-372421', variable: 'GC_KEY')]) {
+    sh("gcloud auth activate-service-account --key-file=${GC_KEY}")
+	sh 'docker image  build -t gcr.io/$GOOGLE_CLOUD_PROJECT/springboot-maven-course-micro-svc:v1 .'
+	sh 'docker image push gcr.io/peaceful-basis-372421/springboot-maven-course-micro-svc:v1
+  }
+  
+ 
+ 
+they might be using azure devops with other clouds
+
+meaning aws all the services will be there
+instead of jenkins or aws code pipeline or other things
+they may use azure devops
+#########################################
+
+docker volume
+docker compose
+docker swarm
+#######################
+k8s
+######################

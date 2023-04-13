@@ -1,0 +1,53 @@
+url:
+----
+www.company.com
+
+
+eksctl create iamserviceaccount \
+  --cluster=eksdemo \
+  --region=us-east-1 \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::638843389611:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+  
+  
+1. Create Role
+2. Create Service account in kubernetes
+3. attaching role arn to SA
+4. attach OIDC provider to role as a trust relationship policy
+
+
+1. Checkout
+	git clone
+2. build docker image
+	docker build -t nodejshello:v1 .
+3. push docker image
+	docker tag nodejshello:v1 naresh240/nodejshello:v1
+	docker push naresh240/nodejshello:v1
+	
+nodejs.awsdevopstrainer.com
+www.awsdevopstrainer.com
+
+DNS  -->  wildcard + domain
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nodejs-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodejs-service
+            port:
+              number: 8080
